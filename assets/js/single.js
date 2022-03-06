@@ -2,9 +2,25 @@ var issueContainerEl = document.querySelector("#issues-container");
 var limitWarningEl = document.querySelector("#limit-warning");
 var repoNameEl = document.querySelector("#repo-name");
 
+var getRepoName = function() {
+    // grab repo name from url query string
+    var queryString = document.location.search;
+    var repoName = queryString.split("=")[1];
+  
+    if (repoName) {
+      // display repo name on the page
+      repoNameEl.textContent = repoName;
+  
+      getRepoIssues(repoName);
+    } else {
+      // if no repo was given, redirect to the homepage
+      document.location.replace("./index.html");
+    }
+};
+
 var getRepoIssues = function (repo) {
     var apiUrl = "https://api.github.com/repos/" + repo + "/issues?direction=asc";
-
+    // make a get request to URL
     fetch(apiUrl).then(function (response) {
         // request was successful
         if (response.ok) {
@@ -12,26 +28,21 @@ var getRepoIssues = function (repo) {
                 // pass response data to dom function
                 displayIssues(data);
 
-                // check if api has paginated Issues
+                // check if api has paginated issues
                 if (response.headers.get("Link")){
                     displayWarning(repo);
                 }
             });
         }
         else {
+            // if not successful, redirect to homepage
             console.log(response)
-            alert("There was a problem with your request!");
+            document.location.replace("./index.html");
         }
     });
 };
 
-var getRepoName = function(){
-    var queryString = document.location.search;
-    var repoName = queryString.split("=")[1];
-    getRepoIssues(repoName);
-    repoNameEl.textContent = repoName;
 
-}
 
 var displayIssues = function (issues) {
     if (issues.length === 0) {
@@ -39,6 +50,7 @@ var displayIssues = function (issues) {
         return;
     }
 
+    // loop over given issues
     for (var i = 0; i < issues.length; i++) {
         // create a link element to take users to the issue on github
         var issueEl = document.createElement("a");
@@ -84,5 +96,7 @@ var displayWarning = function(repo) {
     // append to warning container
     limitWarningEl.appendChild(linkEl);
   };
+
+  
 
 getRepoName();
